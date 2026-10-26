@@ -97,13 +97,15 @@ function canPlace(t,x,y){if(!inMap(x,y)||terrain[y*MW+x]===1||bAt(x,y))return fa
 const afford=c=>Object.entries(c).every(([k,v])=>G.res[k]>=v);
 // belt auto-join: a dead-end belt next to the new belt turns into it
 function beltOut(n){const d=DIRS[n.rot],f=bAt(n.x+d[0],n.y+d[1]);return f&&f!==n;}
-function autoJoin(b){if(!b||b.t!=='conveyor')return;const d=DIRS[b.rot];for(let k=0;k<4;k++){const nd=DIRS[k],n=bAt(b.x+nd[0],b.y+nd[1]);if(!n||n.t!=='conveyor')continue;
- if(n.x===b.x+d[0]&&n.y===b.y+d[1])continue;// b feeds n
- const nf=DIRS[n.rot];if(n.x+nf[0]===b.x&&n.y+nf[1]===b.y)continue;// already feeds b
- if(beltOut(n))continue;const r=(k+2)%4;if(r!==(b.rot+2)%4)n.rot=r;}}
+function autoJoin(b){if(!b||b.t!=='conveyor')return;for(let k=0;k<4;k++){const nd=DIRS[k],n=bAt(b.x+nd[0],b.y+nd[1]);if(!n||n.t!=='conveyor'||n===b)continue;
+ const r=(k+2)%4;// direction n -> b
+ if(b.rot!==r)continue;// only when b continues straight away from n (natural corner); never side-merge re-aim
+ if(beltOut(n))continue;// n already has an output continuation
+ if(n.rot===r||n.rot===(r+2)%4)continue;// n already feeds b, or turning would reverse it
+ n.rot=r;}}
 function place(t,x,y,r,free){if(!canPlace(t,x,y))return false;if(!free){if(!afford(B[t].cost))return false;for(const[k,v]of Object.entries(B[t].cost))G.res[k]-=v;}
  const b=newB(t,x,y,r);G.blds.push(b);tileB[y*MW+x]=b;if(B[t].solid)calcFlow();if(isPow(t))relink();
- if(!free){puff(x+.5,y+.5,'#ffffff',5,.6);SND.play('build');vib(8);}if(t==='conveyor'&&!free)autoJoin(b);return b;}
+ if(!free){puff(x+.5,y+.5,'#ffffff',5,.6);SND.play('build');vib(8);}if(t==='conveyor'&&(!free||free==='aj'))autoJoin(b);return b;}
 function removeB(b,refund){if(sel===b)selB(null);G.blds.splice(G.blds.indexOf(b),1);tileB[b.y*MW+b.x]=null;if(refund)for(const[k,v]of Object.entries(B[b.t].cost))G.res[k]+=v;if(B[b.t].solid)calcFlow();if(isPow(b.t))relink();}
 function makeCore(){const c=G.core;const b=newB('core',c.x,c.y);b.core=true;G.coreB=b;for(let y=-1;y<=1;y++)for(let x=-1;x<=1;x++)tileB[(c.y+y)*MW+c.x+x]=b;}
 // item transfer: offer item to building b coming from tile (sx,sy)
@@ -287,7 +289,8 @@ $('bRot').onclick=()=>{rot=(rot+1)%4;SND.play('click');if(sel&&sel.t==='conveyor
 function updCtl(){$('bPause').textContent=paused?'▶':'⏸';$('bPause').classList.toggle('on',paused);$('bSpeed').textContent='×'+speed;$('bSpeed').classList.toggle('on',speed>1);}
 $('bPause').onclick=()=>{paused=!paused;updCtl();};$('bSpeed').onclick=()=>{speed=speed===1?2:1;updCtl();};$('bMenu').onclick=()=>{save();show('pause');};
 $('bWave').onclick=()=>{if(G.queue.length)return;startWave();};
-function updHud(){$('res').innerHTML=Object.entries(ITEMS).filter(([k])=>G.res[k]>0||['copper','lead','coal','graphite'].includes(k)).map(([k,v])=>`<span>${itemIc(k)}${G.res[k]|0}</span>`).join('');
+const fmtN=n=>n>=1e5?Math.round(n/1e3)+'k':n>=1e4?(n/1e3).toFixed(1)+'k':String(n);
+function updHud(){$('res').innerHTML=Object.entries(ITEMS).filter(([k])=>G.res[k]>0||['copper','lead','coal','graphite'].includes(k)).map(([k,v])=>`<span>${itemIc(k)}<b>${fmtN(G.res[k]|0)}</b></span>`).join('');
  const L=G.L;$('wave').innerHTML=`${L.n} · ${T('waveN',G.wave+(L.endless?'':'/'+L.waves))}<br>`+(G.wave>=L.waves?T('enemiesLeft',enemies.length+G.queue.length):`${T('nextIn',Math.ceil(G.wT))} · ${T('core')} ${Math.max(0,Math.ceil(G.coreB.hp/B.core.hp*100))}%`);
  $('bWave').disabled=G.wave>=L.waves||G.queue.length>0;updTools();if(sel)renderSel();}
 function selB(b){sel=b;if(!b){$('binfo').classList.add('hide');return;}renderSel();$('binfo').classList.remove('hide');}
@@ -501,4 +504,4 @@ function updUnits(dt){for(const b of G.blds){
 applySettings();show('scrMain');requestAnimationFrame(loop);
 // отладочные хуки для автотестов
 function sim(sec,dt){dt=dt||.05;for(let t=0;t<sec&&G&&!G.over;t+=dt)step(dt);return G&&{over:G.over,wave:G.wave,core:G.coreB.hp,kills:G.stats.kills,en:enemies.length};}
-window.__f={get G(){return G},cam,start,place,startWave,get enemies(){return enemies},setTool:t=>{tool=t;updTools();},TUT,sim,get prog(){return prog},LEVELS,B,waveList,dmgB,tutAdvance,get S(){return S},canPlace,removeB,doUpgrade,upCost,relink,get units(){return G.units},waveList};
+window.__f={beltCurve:b=>beltCurve(b),get G(){return G},cam,start,place,startWave,get enemies(){return enemies},setTool:t=>{tool=t;updTools();},TUT,sim,get prog(){return prog},LEVELS,B,waveList,dmgB,tutAdvance,get S(){return S},canPlace,removeB,doUpgrade,upCost,relink,get units(){return G.units},waveList};

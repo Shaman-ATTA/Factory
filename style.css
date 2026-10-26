@@ -64,3 +64,7 @@ button:active{transform:scale(.95)}button.on,button.sel{background:linear-gradie
 #scrMain,#scrLevels{background:linear-gradient(180deg,rgba(8,10,16,.25),rgba(8,10,16,.55));-webkit-backdrop-filter:none;backdrop-filter:none}
 #scrMain button,#scrLevels button{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:linear-gradient(180deg,rgba(50,56,70,.75),rgba(30,34,44,.75))}
 body.inmenu #hud{visibility:hidden}
+
+#res{font-variant-numeric:tabular-nums;display:grid!important;grid-template-columns:repeat(2,64px);gap:2px 8px!important;max-width:none!important}#res span b{flex:1;text-align:right;font-weight:600;min-width:38px}
+#wave{font-variant-numeric:tabular-nums;width:128px;box-sizing:border-box;white-space:normal}
+@media (orientation:landscape){#res{grid-auto-flow:column;grid-template-columns:none!important;grid-template-rows:auto}#res span{width:64px}}
