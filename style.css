@@ -82,3 +82,8 @@ body.inmenu #hud{visibility:hidden}
 #acts button.hide{display:none}#bOk{background:#2c6a35!important}#okN{position:absolute;top:1px;right:3px;font-size:9px}#bCancel{color:#ff8080}
 #tip{left:calc(64px + env(safe-area-inset-left))!important;bottom:auto!important;top:96px;max-width:min(300px,60vw)!important}
 #wave{width:156px!important;font-size:12px!important;line-height:1.25}
+#mini{position:absolute;right:8px;top:calc(env(safe-area-inset-top) + 64px);border:2px solid #0008;border-radius:6px;box-shadow:0 2px 8px #0008;pointer-events:auto;image-rendering:auto}
+#wave .wp{font-size:11px;opacity:.9}#wave .wp i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 2px 0 3px;vertical-align:middle}
+@media (orientation:portrait){#ctl{display:grid!important;grid-template-columns:repeat(2,38px);gap:3px}#ctl button{padding:4px 0!important;font-size:13px}#ctl #bWave span{display:none}#wave{width:140px!important}#mini{top:calc(env(safe-area-inset-top) + 84px)}}
+@media (orientation:landscape){#mini{top:calc(env(safe-area-inset-top) + 48px)}}
+#top #wave{pointer-events:none}
