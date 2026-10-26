@@ -36,6 +36,8 @@ renderMap=function(){const R=hq()?(MW*MH>2000?24:32):16;GFX.TR=R;const Wp=MW*R,H
  const rk=new Float32Array((MW+2)*(MH+2));for(let y=-1;y<=MH;y++)for(let x=-1;x<=MW;x++){const xx=Math.max(0,Math.min(MW-1,x)),yy=Math.max(0,Math.min(MH-1,y));rk[(y+1)*(MW+2)+x+1]=terrain[yy*MW+xx]===1?1:0;}
  const RK=(u,v)=>{u-=.5;v-=.5;const xi=Math.floor(u),yi=Math.floor(v),xf=u-xi,yf=v-yi;const s=(x,y)=>rk[(Math.max(-1,Math.min(MH,y))+1)*(MW+2)+Math.max(-1,Math.min(MW,x))+1];
   const a=s(xi,yi),b=s(xi+1,yi),cc=s(xi,yi+1),dd=s(xi+1,yi+1);const sx=xf*xf*(3-2*xf),sy=yf*yf*(3-2*yf);return a+(b-a)*sx+(cc-a)*sy+(a-b-cc+dd)*sx*sy;};
+ const wk=new Float32Array((MW+2)*(MH+2));for(let y=-1;y<=MH;y++)for(let x=-1;x<=MW;x++){const xx=Math.max(0,Math.min(MW-1,x)),yy=Math.max(0,Math.min(MH-1,y));wk[(y+1)*(MW+2)+x+1]=terrain[yy*MW+xx]===7?1:0;}
+ const WK=(u,v)=>{u-=.5;v-=.5;const xi=Math.floor(u),yi=Math.floor(v),xf=u-xi,yf=v-yi;const s=(x,y)=>wk[(Math.max(-1,Math.min(MH,y))+1)*(MW+2)+Math.max(-1,Math.min(MW,x))+1];const a=s(xi,yi),b=s(xi+1,yi),cc=s(xi,yi+1),dd=s(xi+1,yi+1);const sx=xf*xf*(3-2*xf),sy=yf*yf*(3-2*yf);return a+(b-a)*sx+(cc-a)*sy+(a-b-cc+dd)*sx*sy;};
  for(let py=0;py<Hp;py++)for(let px=0;px<Wp;px++){const u=(px+.5)/R,v=(py+.5)/R;const n=fbm(u*.35,v*.35,sd,3),f=vnoise(u*3.1,v*3.1,sd+5);
   const rv=RK(u,v)+(f-.5)*.32+(n-.5)*.2;let r,g,b;
   if(rv>.5){const e=.12;const gx=RK(u+e,v)-RK(u-e,v),gy=RK(u,v+e)-RK(u,v-e);const h=Math.min(1,(rv-.5)*3.2);let L=.62+(-gx-gy)*.9;L=Math.max(.25,Math.min(1.35,L));
@@ -43,7 +45,8 @@ renderMap=function(){const R=hq()?(MW*MH>2000?24:32):16;GFX.TR=R;const Wp=MW*R,H
   else{const sh=Math.max(0,RK(u-.28,v-.34)-.25)*1.3+Math.max(0,rv-.2)*.5;const m=fbm(u*.12,v*.12,sd+11,2);const grain=hash2(px,py,sd)*10;
    r=40+n*22+m*10+grain;g=44+n*20+(1-m)*8+grain;b=40+n*14+grain*.7;{const P=BIOME_P(),q=m>.58?P.b:P.a;r=r*q[0]+q[3];g=g*q[1]+q[4];b=b*q[2]+q[5];if(P.metal){const gx=u%3,gy=v%3;if(fbm(u*.08,v*.08,sd+21,2)>.5){const e=Math.min(gx,gy,3-gx,3-gy);const pl=e<.05?-14:e<.1?10:0;r=r*.8+20+pl;g=g*.82+22+pl;b=b*.9+26+pl;if(Math.abs(gx-.3)<.04&&Math.abs(gy-.3)<.04){r-=20;g-=20;b-=20;}}}}
    const k=1-Math.min(.6,sh);r*=k;g*=k;b*=k;
-   {const tt=terrain[Math.min(MH-1,v|0)*MW+Math.min(MW-1,u|0)];if(tt===7){const P=BIOME_P();const wd=wdist(u,v);const dep=Math.min(1,wd*1.6);const wc=P.liquid;r=wc[0]*(1-dep*.5)+n*10;g=wc[1]*(1-dep*.4)+n*10;b=wc[2]*(1-dep*.25)+n*8;if(wd<.12){r=r*.6+P.shore[0]*.4;g=g*.6+P.shore[1]*.4;b=b*.6+P.shore[2]*.4;}}}
+   {const wv=WK(u,v)+(f-.5)*.22+(n-.5)*.18;if(wv>.4){const P=BIOME_P(),wc=P.liquid,sc=P.shore;if(wv<.5){const k2=(wv-.4)*10;const wet=P.lava?[60,30,20]:[r*.7,g*.75,b*.8];r=r*(1-k2*.6)+wet[0]*k2*.6;g=g*(1-k2*.6)+wet[1]*k2*.6;b=b*(1-k2*.6)+wet[2]*k2*.6;}
+    else{const dep=Math.min(1,(wv-.5)*2.4);r=wc[0]*(1-dep*.5)+n*12;g=wc[1]*(1-dep*.4)+n*12;b=wc[2]*(1-dep*.25)+n*10;if(P.lava){const cr=fbm(u*1.7,v*1.7,sd+31,2);if(dep>.3&&cr>.55){r*=.45;g*=.4;b*=.4;}else{r+=dep*40;g+=dep*30;}}if(wv<.56){const k3=1-(wv-.5)/.06;r=r*(1-k3*.7)+sc[0]*k3*.7;g=g*(1-k3*.7)+sc[1]*k3*.7;b=b*(1-k3*.7)+sc[2]*k3*.7;}}}}
    const t=terrain[Math.min(MH-1,v|0)*MW+Math.min(MW-1,u|0)];if(ORE[t]){const oc=ITEMS[ORE[t]].c,on=parseInt(oc.slice(1),16);const w=.16*(.6+f*.6);r=r*(1-w)+(on>>16)*.55*w;g=g*(1-w)+(on>>8&255)*.55*w;b=b*(1-w)+(on&255)*.55*w;}}
   const i=(py*Wp+px)*4;d[i]=r;d[i+1]=g;d[i+2]=b;d[i+3]=255;}
  c.putImageData(img,0,0);c.setTransform(R,0,0,R,0,0);

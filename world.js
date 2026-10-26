@@ -27,12 +27,11 @@ function tuft(c,d,t,col,P){const sw=Math.sin(t*1.6+d.p+d.x*.4)*.06*d.s;c.strokeS
 window.worldFX=function(c,x0,x1,y0,y1){if(!G)return;if(DKEY!==G)buildDecor();const P=BIOME_P(),t=now/1000,q=hq();
  // liquids
  for(let i=0;i<WT.length;i+=3){const x=WT[i],y=WT[i+1];if(x<x0||x>x1||y<y0||y>y1)continue;
-  if(P.lava){const g=.5+.5*Math.sin(t*1.3+x*.7+y*.9);c.fillStyle=`rgba(255,${120+g*60|0},40,${.18+g*.18})`;c.fillRect(x,y,1,1);if(q&&((x*7+y*13)%5===0))glow(x+.5,y+.5,1.1,'rgba(255,120,30,.35)');
+  if(P.lava){const g=.5+.5*Math.sin(t*1.3+x*.7+y*.9);c.fillStyle=`rgba(255,${120+g*60|0},40,${(.1+g*.12)*(WT[i+2]?.6:1)})`;c.beginPath();c.arc(x+.5,y+.5,WT[i+2]?.45:.7,0,7);c.fill();if(q&&((x*7+y*13)%5===0))glow(x+.5,y+.5,1.1,'rgba(255,120,30,.35)');
    if(Math.random()<.004)parts.push({x:x+Math.random(),y:y+Math.random(),vx:0,vy:-.4,life:1.2,max:1.2,c:'#6a5a5088',s:.18,smoke:true});}
   else if(P.ice){if(((x+y+(t*2|0))%9)===0){const k=(t*2)%1;c.fillStyle=`rgba(255,255,255,${.35*(1-Math.abs(k*2-1))})`;c.fillRect(x+.2,y+.3,.25,.04);c.fillRect(x+.3,y+.2,.04,.25);}}
   else{c.strokeStyle='rgba(200,230,255,.13)';c.lineWidth=.04;c.beginPath();for(let k=0;k<2;k++){const yy=y+.3+k*.4+Math.sin(t*1.5+x*.8+k)*.06;c.moveTo(x+.1,yy);c.quadraticCurveTo(x+.5,yy+Math.sin(t*2+x+y)*.08,x+.9,yy);}c.stroke();
-   if(WT[i+2]){const a=.18+.12*Math.sin(t*2.2+x*1.3+y);c.strokeStyle=`rgba(255,255,255,${a})`;c.lineWidth=.06;c.setLineDash([.12,.1]);c.lineDashOffset=t*.3;
-    c.beginPath();if(!isW(x-1,y)){c.moveTo(x+.06,y);c.lineTo(x+.06,y+1);}if(!isW(x+1,y)){c.moveTo(x+.94,y);c.lineTo(x+.94,y+1);}if(!isW(x,y-1)){c.moveTo(x,y+.06);c.lineTo(x+1,y+.06);}if(!isW(x,y+1)){c.moveTo(x,y+.94);c.lineTo(x+1,y+.94);}c.stroke();c.setLineDash([]);}}}
+   if(WT[i+2]){const a=.12+.1*Math.sin(t*2.2+x*1.3+y);c.strokeStyle=`rgba(255,255,255,${a})`;c.lineWidth=.05;c.beginPath();c.ellipse(x+.5,y+.5,.35+.06*Math.sin(t*1.7+x),.25,(x*y)%3,0,7);c.stroke();}}}
  // vegetation
  if(q||cam.z>18){const col=P.veg;for(const d of DEC){if(d.x<x0||d.x>x1+1||d.y<y0||d.y>y1+1)continue;if(tileB[(d.y|0)*MW+(d.x|0)])continue;tuft(c,d,t,col,P);}c.lineCap='butt';}
  // spawn portals
