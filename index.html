@@ -5,20 +5,29 @@
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
 <title>Фабрика: Рубеж</title><link rel="stylesheet" href="style.css"></head><body>
 <canvas id="c"></canvas>
+<div id="hud">
 <div id="top">
  <div id="res"></div>
  <div id="wave"></div>
- <div id="ctl"><button id="bWave">⚔ Волна</button><button id="bPause">⏸</button><button id="bSpeed">×1</button><button id="bMenu">☰</button></div>
+ <div id="ctl"><button id="bWave">⚔ <span data-i="wave"></span></button><button id="bPause">⏸</button><button id="bSpeed">×1</button><button id="bMenu">☰</button></div>
 </div>
-<div id="info"></div>
-<div id="tut" class="hide"><div id="tutTxt"></div><div><button id="tutNext">Далее</button> <button id="tutSkip">Пропустить</button></div></div>
-<div id="bar"><div id="tools"></div><div id="acts"><button id="bRot">↻</button><button id="bDel">🗑</button></div></div>
+<div id="fps" class="hide"></div>
+<div id="binfo" class="hide"></div>
+<div id="tut" class="hide"><div id="tutTxt"></div><div><button id="tutNext" data-i="next"></button> <button id="tutSkip" data-i="skip"></button></div></div>
+<div id="tip" class="hide"></div>
+<div id="bar"><div id="build"><div id="cats"></div><div id="tools"></div></div><div id="acts"><button id="bRot">↻</button><button id="bDel">🗑</button></div></div>
+</div>
 <div id="toast"></div>
-<div id="menu" class="panel"><h1>ФАБРИКА: РУБЕЖ</h1><p class="sm">Добывайте ресурсы, стройте конвейеры и заводы, питайте турели и удержите ядро.</p>
- <div id="levels"></div>
- <p class="sm">Палец — двигать карту, два пальца — зум. Конвейер прокладывается ведением пальца.<br>ПК: перетаскивание мышью, колесо — зум, R — поворот, Пробел — пауза, Esc — отмена.</p>
- <button id="bResume" class="hide">Продолжить игру</button></div>
-<div id="end" class="panel hide"><h2 id="endT"></h2><p id="endP"></p><button id="endA"></button> <button id="endM">В меню</button></div>
-<script src="game.js"></script>
+<div id="scrMain" class="panel scr"><div id="prof" class="chip"></div><h1 data-i="title"></h1><p class="sm" data-i="subtitle"></p>
+ <div class="col"><button id="mPlay" class="big"></button><button id="mCampaign" data-i="campaign"></button><button id="mEndless"></button><button id="mSettings" data-i="settings"></button><button id="mAccount" data-i="account"></button><button id="mCredits" data-i="credits"></button></div></div>
+<div id="scrLevels" class="panel scr hide"><h2 data-i="campaign"></h2><div id="levels"></div><button class="back" data-i="back"></button></div>
+<div id="scrSettings" class="panel scr hide"><h2 data-i="settings"></h2><div id="setForm" class="form"></div><button class="back" data-i="back"></button></div>
+<div id="scrAccount" class="panel scr hide"><h2 data-i="account"></h2><div id="accBody" class="form wide"></div><button class="back" data-i="back"></button></div>
+<div id="scrCredits" class="panel scr hide"><h2 data-i="credits"></h2><p class="sm" data-i="credits_t"></p><button class="back" data-i="back"></button></div>
+<div id="pause" class="panel scr hide"><h2 data-i="pauseT"></h2><div class="col"><button id="pResume" class="big" data-i="resume"></button><button id="pRestart" data-i="restart"></button><button id="pSettings" data-i="settings"></button><button id="pExit" data-i="exitMenu"></button></div></div>
+<div id="end" class="panel hide"><h2 id="endT"></h2><div id="endS" class="stars"></div><p id="endP"></p><button id="endA" class="big"></button> <button id="endM" data-i="toMenu"></button></div>
+<div id="confirm" class="panel hide"><p id="cfT"></p><div><button id="cfY" class="big" data-i="yes"></button> <button id="cfN" data-i="no"></button></div></div>
+<input type="file" id="fileIn" accept=".txt,.f2d,text/plain" class="hide">
+<script src="firebase-config.js"></script><script src="i18n.js"></script><script src="audio.js"></script><script src="auth.js"></script><script src="game.js"></script>
 <script>if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
 </body></html>
