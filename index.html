@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#14161c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
+<title>Фабрика: Рубеж</title><link rel="stylesheet" href="style.css"></head><body>
+<canvas id="c"></canvas>
+<div id="top">
+ <div id="res"></div>
+ <div id="wave"></div>
+ <div id="ctl"><button id="bWave">⚔ Волна</button><button id="bPause">⏸</button><button id="bSpeed">×1</button><button id="bMenu">☰</button></div>
+</div>
+<div id="info"></div>
+<div id="tut" class="hide"><div id="tutTxt"></div><div><button id="tutNext">Далее</button> <button id="tutSkip">Пропустить</button></div></div>
+<div id="bar"><div id="tools"></div><div id="acts"><button id="bRot">↻</button><button id="bDel">🗑</button></div></div>
+<div id="toast"></div>
+<div id="menu" class="panel"><h1>ФАБРИКА: РУБЕЖ</h1><p class="sm">Добывайте ресурсы, стройте конвейеры и заводы, питайте турели и удержите ядро.</p>
+ <div id="levels"></div>
+ <p class="sm">Палец — двигать карту, два пальца — зум. Конвейер прокладывается ведением пальца.<br>ПК: перетаскивание мышью, колесо — зум, R — поворот, Пробел — пауза, Esc — отмена.</p>
+ <button id="bResume" class="hide">Продолжить игру</button></div>
+<div id="end" class="panel hide"><h2 id="endT"></h2><p id="endP"></p><button id="endA"></button> <button id="endM">В меню</button></div>
+<script src="game.js"></script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+</body></html>
