@@ -55,7 +55,7 @@ let S=Object.assign({},SDEF,Auth.get('settings',{}));
 function applySettings(){LANG=I18N[S.lang]?S.lang:'ru';document.documentElement.style.setProperty('--ui',S.ui);SND.setVol({music:S.music,sfx:S.sfx});$('fps').classList.toggle('hide',!S.fps);resize();applyI18n();}
 function saveSettings(){Auth.set('settings',S);}
 const vib=ms=>{if(S.vib&&navigator.vibrate)try{navigator.vibrate(ms)}catch(e){}};
-const MW=48,MH=28;
+const MW=72,MH=42;
 let terrain,tileB,flow,mapImg;
 let cam={x:20,y:14,z:36},speed=1,paused=false,tool=null,rot=0,delMode=false,cat='mine',sel=null;
 let enemies=[],bullets=[],parts=[],flashes=[],beams=[],rings=[];
@@ -63,17 +63,21 @@ function rng(s){return()=>{s=(s*16807)%2147483647;return s/2147483647;}}
 function genMap(L){const r=rng(L.seed*997+1);terrain=new Uint8Array(MW*MH);
  const noise=(x,y)=>{let v=0;for(const[f,a]of[[.12,1],[.25,.5]])v+=a*(Math.sin(x*f*1.7+L.seed)+Math.sin(y*f*2.1+L.seed*.7)+Math.sin((x+y)*f*1.3))/3;return v;};
  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){let t=0;if(noise(x,y)>.55||x===0||y===0||x===MW-1||y===MH-1)t=1;if(r()<.04)t=1;terrain[y*MW+x]=t;}
- const core={x:6,y:MH>>1};for(let y=-4;y<=4;y++)for(let x=-4;x<=4;x++)terrain[(core.y+y)*MW+core.x+x]=0;
+ const core={x:8,y:MH>>1};for(let y=-4;y<=4;y++)for(let x=-4;x<=4;x++)terrain[(core.y+y)*MW+core.x+x]=0;
  const blob=(cx,cy,t,n)=>{for(let i=0;i<n;i++){const x=Math.round(cx+(r()-.5)*4),y=Math.round(cy+(r()-.5)*4);if(x>1&&y>1&&x<MW-2&&y<MH-2)terrain[y*MW+x]=t;}};
  const oreT={copper:2,lead:3,coal:4,sand:5,titanium:6};
  blob(core.x+4,core.y-4,2,22);blob(core.x+3,core.y+5,2,16);
- let k=0;for(const o of L.ores)for(let i=0;i<3;i++){const x=8+r()*28,y=3+r()*(MH-6);blob(x,y,oreT[o],14);k++;}
+ let k=0;for(const o of L.ores)for(let i=0;i<6;i++){const x=10+r()*(MW-20),y=3+r()*(MH-6);blob(x,y,oreT[o],12+(r()*10|0));k++;}
+ // pools of water / lava (decor, unbuildable)
+ const pn=(x,y)=>(Math.sin(x*.21+L.seed*1.3)+Math.sin(y*.27-L.seed)+Math.sin((x-y)*.15+L.seed*.4))/3;
+ for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++)if(terrain[y*MW+x]===0&&pn(x,y)>.62&&Math.hypot(x-core.x,y-core.y)>14)terrain[y*MW+x]=7;
  if(L.ores.includes('coal'))blob(core.x+7,core.y+1,4,14);
  if(L.ores.includes('lead'))blob(core.x+1,core.y-7,3,14);
  if(L.ores.includes('sand'))blob(core.x+9,core.y-4,5,16);if(L.ores.includes('titanium'))blob(core.x+11,core.y+5,6,14);
  const spawns=[];for(let i=0;i<L.spawns;i++){const sy=L.spawns===1?(4+r()*(MH-8))|0:(i?MH-5:4);spawns.push({x:MW-3,y:sy});for(let y=-2;y<=2;y++)for(let x=-2;x<=1;x++)terrain[(sy+y)*MW+MW-3+x]=0;}
  // carve path so spawn reachable
  for(const s of spawns){let x=s.x,y=s.y;while(x>core.x){x--;if(r()<.3)y+=Math.sign(core.y-y);if(terrain[y*MW+x]===1)terrain[y*MW+x]=0;}}
+ for(let y=-8;y<=8;y++)for(let x=-7;x<=9;x++){const i=(core.y+y)*MW+core.x+x;if(core.y+y>0&&core.y+y<MH-1&&core.x+x>0&&Math.hypot(x*.8,y)<8.5&&(terrain[i]===7||terrain[i]===1))terrain[i]=0;}
  return{core,spawns};}
 function renderMap(){mapImg=document.createElement('canvas');mapImg.width=MW*16;mapImg.height=MH*16;const c=mapImg.getContext('2d');const r=rng(7);
  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const t=terrain[y*MW+x];
@@ -92,7 +96,7 @@ function calcFlow(){flow=new Float32Array(MW*MH).fill(1e9);const q=[];const c=G.
   const b=bAt(nx,ny);const cost=b&&B[b.t].solid?6:1;if(flow[ny*MW+nx]>d+cost){flow[ny*MW+nx]=d+cost;q.push([nx,ny]);}}}}
 // ---------- buildings ----------
 function newB(t,x,y,r){const b={t,x,y,lv:1,pw:0,inp2:0,st:0,fuel:0,rot:r||0,hp:B[t].hp,items:[],buf:[],ammo:0,ammoT:null,ang:Math.PI,cd:0,prog:0,inp:0,out:0,rr:0,flash:0,charge:0};return b;}
-function canPlace(t,x,y){if(!inMap(x,y)||terrain[y*MW+x]===1||bAt(x,y))return false;if(t==='drill'&&(!ORE[terrain[y*MW+x]]||terrain[y*MW+x]===6))return false;if(t==='pdrill'&&!ORE[terrain[y*MW+x]])return false;
+function canPlace(t,x,y){if(!inMap(x,y)||terrain[y*MW+x]===1||terrain[y*MW+x]===7||bAt(x,y))return false;if(t==='drill'&&(!ORE[terrain[y*MW+x]]||terrain[y*MW+x]===6))return false;if(t==='pdrill'&&!ORE[terrain[y*MW+x]])return false;
  for(const s of G.spawns)if(Math.abs(s.x-x)<=1&&Math.abs(s.y-y)<=1)return false;return true;}
 const afford=c=>Object.entries(c).every(([k,v])=>G.res[k]>=v);
 // belt auto-join: a dead-end belt next to the new belt turns into it
@@ -309,7 +313,7 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const[wx,wy]=toW(e.clientX,e.
 let hover=null;
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='KeyR')$('bRot').onclick();if(e.code==='Space'&&G){paused=!paused;updCtl();}if(e.code==='Escape'){tool=null;delMode=false;selB(null);updTools();}});
 document.addEventListener('contextmenu',e=>e.preventDefault());
-function clampCam(){cam.x=Math.max(0,Math.min(MW,cam.x));cam.y=Math.max(0,Math.min(MH,cam.y));}
+function clampCam(){const hw=W/2/cam.z,hh=H/2/cam.z,m=2;cam.x=hw*2>=MW+m*2?MW/2:Math.max(hw-m,Math.min(MW+m-hw,cam.x));cam.y=hh*2>=MH+m*2?MH/2:Math.max(hh-m,Math.min(MH+m-hh,cam.y));}
 function failMsg(t,x,y){if(!afford(B[t].cost))toast(T('noRes'));else if(t==='drill'&&inMap(x,y)&&!bAt(x,y)&&terrain[y*MW+x]!==1)toast(T('drillOre'));else toast(T('cantPlace'));SND.play('error');}
 function paintAt(x,y){if(!G||G.over)return;const l=drag.last;if(l&&l[0]===x&&l[1]===y)return;
  if(delMode){const b=bAt(x,y);if(b&&!b.core){removeB(b,true);puff(x+.5,y+.5,'#f66',5,.6);SND.play('remove');}drag.last=[x,y];return;}

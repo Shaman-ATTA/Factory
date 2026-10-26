@@ -31,7 +31,7 @@ function glowSpr(col){let g=GFX.glow.get(col);if(g)return g;g=mkCanvas(64,64);co
 // очередь свечения (аддитивно поверх)
 let GLQ=[];function glow(x,y,r,col){if(hq())GLQ.push(x,y,r,col);}
 // ===================== ЛАНДШАФТ (чанки) =====================
-renderMap=function(){const R=hq()?32:16;GFX.TR=R;const Wp=MW*R,Hp=MH*R;mapImg=null;
+renderMap=function(){const R=hq()?(MW*MH>2000?24:32):16;GFX.TR=R;const Wp=MW*R,Hp=MH*R;mapImg=null;
  const full=mkCanvas(Wp,Hp),c=full.getContext('2d');const img=c.createImageData(Wp,Hp),d=img.data;const sd=(G&&G.L&&G.L.seed)||7;
  const rk=new Float32Array((MW+2)*(MH+2));for(let y=-1;y<=MH;y++)for(let x=-1;x<=MW;x++){const xx=Math.max(0,Math.min(MW-1,x)),yy=Math.max(0,Math.min(MH-1,y));rk[(y+1)*(MW+2)+x+1]=terrain[yy*MW+xx]===1?1:0;}
  const RK=(u,v)=>{u-=.5;v-=.5;const xi=Math.floor(u),yi=Math.floor(v),xf=u-xi,yf=v-yi;const s=(x,y)=>rk[(Math.max(-1,Math.min(MH,y))+1)*(MW+2)+Math.max(-1,Math.min(MW,x))+1];
@@ -39,9 +39,11 @@ renderMap=function(){const R=hq()?32:16;GFX.TR=R;const Wp=MW*R,Hp=MH*R;mapImg=nu
  for(let py=0;py<Hp;py++)for(let px=0;px<Wp;px++){const u=(px+.5)/R,v=(py+.5)/R;const n=fbm(u*.35,v*.35,sd,3),f=vnoise(u*3.1,v*3.1,sd+5);
   const rv=RK(u,v)+(f-.5)*.32+(n-.5)*.2;let r,g,b;
   if(rv>.5){const e=.12;const gx=RK(u+e,v)-RK(u-e,v),gy=RK(u,v+e)-RK(u,v-e);const h=Math.min(1,(rv-.5)*3.2);let L=.62+(-gx-gy)*.9;L=Math.max(.25,Math.min(1.35,L));
-   const cr=vnoise(u*6,v*6,sd+9);const base=62+h*26+cr*22-(h<.25?14:0);r=base*L+6;g=base*L+2;b=base*L-4;if(h>.85){const t=fbm(u*1.3,v*1.3,sd+3,2);r+=t*14;g+=t*12;b+=t*10;}}
+   const cr=vnoise(u*6,v*6,sd+9);const base=62+h*26+cr*22-(h<.25?14:0);{const P=BIOME_P().rock;r=(base*L+6)*P[0];g=(base*L+2)*P[1];b=(base*L-4)*P[2];}if(h>.85){const t=fbm(u*1.3,v*1.3,sd+3,2);r+=t*14;g+=t*12;b+=t*10;}}
   else{const sh=Math.max(0,RK(u-.28,v-.34)-.25)*1.3+Math.max(0,rv-.2)*.5;const m=fbm(u*.12,v*.12,sd+11,2);const grain=hash2(px,py,sd)*10;
-   r=40+n*22+m*10+grain;g=44+n*20+(1-m)*8+grain;b=40+n*14+grain*.7;const k=1-Math.min(.6,sh);r*=k;g*=k;b*=k;
+   r=40+n*22+m*10+grain;g=44+n*20+(1-m)*8+grain;b=40+n*14+grain*.7;{const P=BIOME_P(),q=m>.58?P.b:P.a;r=r*q[0]+q[3];g=g*q[1]+q[4];b=b*q[2]+q[5];if(P.metal){const gx=u%3,gy=v%3;if(fbm(u*.08,v*.08,sd+21,2)>.5){const e=Math.min(gx,gy,3-gx,3-gy);const pl=e<.05?-14:e<.1?10:0;r=r*.8+20+pl;g=g*.82+22+pl;b=b*.9+26+pl;if(Math.abs(gx-.3)<.04&&Math.abs(gy-.3)<.04){r-=20;g-=20;b-=20;}}}}
+   const k=1-Math.min(.6,sh);r*=k;g*=k;b*=k;
+   {const tt=terrain[Math.min(MH-1,v|0)*MW+Math.min(MW-1,u|0)];if(tt===7){const P=BIOME_P();const wd=wdist(u,v);const dep=Math.min(1,wd*1.6);const wc=P.liquid;r=wc[0]*(1-dep*.5)+n*10;g=wc[1]*(1-dep*.4)+n*10;b=wc[2]*(1-dep*.25)+n*8;if(wd<.12){r=r*.6+P.shore[0]*.4;g=g*.6+P.shore[1]*.4;b=b*.6+P.shore[2]*.4;}}}
    const t=terrain[Math.min(MH-1,v|0)*MW+Math.min(MW-1,u|0)];if(ORE[t]){const oc=ITEMS[ORE[t]].c,on=parseInt(oc.slice(1),16);const w=.16*(.6+f*.6);r=r*(1-w)+(on>>16)*.55*w;g=g*(1-w)+(on>>8&255)*.55*w;b=b*(1-w)+(on&255)*.55*w;}}
   const i=(py*Wp+px)*4;d[i]=r;d[i+1]=g;d[i+2]=b;d[i+3]=255;}
  c.putImageData(img,0,0);c.setTransform(R,0,0,R,0,0);
@@ -234,7 +236,7 @@ draw=function(){const c=ctx;c.setTransform(1,0,0,1,0,0);
  const z=cam.z*DPR;c.setTransform(z,0,0,z,DPR*W/2-(cam.x+ox)*z,DPR*H/2-(cam.y+oy)*z);c.imageSmoothingEnabled=true;
  const x0=Math.floor(cam.x-W/2/cam.z)-1,x1=Math.ceil(cam.x+W/2/cam.z)+1,y0=Math.floor(cam.y-H/2/cam.z)-1,y1=Math.ceil(cam.y+H/2/cam.z)+1;
  if(!GFX.chunks.length&&terrain)renderMap();
- for(const k of GFX.chunks)if(k.x<=x1&&k.x+k.w>=x0&&k.y<=y1&&k.y+k.h>=y0)c.drawImage(k.c,k.x,k.y,k.w,k.h);
+ for(const k of GFX.chunks)if(k.x<=x1&&k.x+k.w>=x0&&k.y<=y1&&k.y+k.h>=y0)c.drawImage(k.c,k.x,k.y,k.w,k.h);if(window.worldFX)worldFX(c,x0,x1,y0,y1);
  for(const s of G.spawns){const p=.5+.5*Math.sin(now/300),cx=s.x+.5,cy=s.y+.5;c.fillStyle=rg(c,cx,cy,0,1.6,['rgba(255,60,60,.35)','rgba(120,0,0,.15)','rgba(0,0,0,0)']);c.beginPath();c.arc(cx,cy,1.6,0,7);c.fill();
   c.strokeStyle=`rgba(255,80,70,${.5+p*.4})`;c.lineWidth=.07;c.setLineDash([.3,.2]);c.lineDashOffset=now/400;c.beginPath();c.arc(cx,cy,1.2+p*.2,0,7);c.stroke();c.setLineDash([]);glow(cx,cy,2.2,'rgba(255,50,40,.35)');}
  const vis=b=>b.x>=x0&&b.x<=x1&&b.y>=y0&&b.y<=y1;
@@ -265,6 +267,6 @@ draw=function(){const c=ctx;c.setTransform(1,0,0,1,0,0);
   else{c.fillStyle='rgba(255,60,60,.2)';c.fillRect(hx,hy,1,1);c.strokeStyle='#f55';c.lineWidth=.08;c.strokeRect(hx,hy,1,1);}}
  if(sel&&!sel.core){const p=.5+.5*Math.sin(now/200);c.strokeStyle=`rgba(255,200,70,${.7+.3*p})`;c.lineWidth=.06;rrect(c,sel.x-.04,sel.y-.04,1.08,1.08,.12);c.stroke();if(B[sel.t].range){c.fillStyle='rgba(240,192,64,.06)';c.strokeStyle='rgba(240,192,64,.4)';c.lineWidth=.04;c.beginPath();c.arc(sel.x+.5,sel.y+.5,B[sel.t].range,0,7);c.fill();c.stroke();}if(sel.t==='conveyor')arrow(c,sel.x,sel.y,sel.rot,'#f0c040cc');}
  // экранные эффекты
- c.setTransform(1,0,0,1,0,0);if(hq())c.drawImage(vignette(cv.width,cv.height),0,0);};
+ if(window.worldTop)worldTop(c,x0,x1,y0,y1);c.setTransform(1,0,0,1,0,0);if(window.screenFX)screenFX(c);if(hq())c.drawImage(vignette(cv.width,cv.height),0,0);};
 // иконки ресурсов в HTML-интерфейсе
 mkIcons();
