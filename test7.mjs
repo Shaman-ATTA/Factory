@@ -8,7 +8,7 @@ const info=await p.evaluate(()=>{__f.start(0);const G=__f.G;G.tut=-1;G.wT=999;G.
  // clear area: find spot: drill column at cx+6, from cy-6.. ; force ore & free
  const tx=cx+6,ty=cy-5;__f.cam.x=cx+3;__f.cam.y=cy-2;__f.cam.z=innerHeight<500?20:34;
  for(const q of __f.G.blds.slice())if(!q.core)__f.G.blds.splice(__f.G.blds.indexOf(q),1);
- return{cx,cy,tx,ty};});await p.waitForTimeout(800);await p.evaluate(([x,y])=>{const G=__f.G;__f.cam.x=G.core.x+3;__f.cam.y=G.core.y-2;__f.cam.z=innerHeight<500?20:34;G.tut=-1;document.querySelectorAll('#tut,#tutBox').forEach(e=>e.style.display='none')},[0,0]);
+ return{cx,cy,tx,ty};});await p.waitForTimeout(800);await p.evaluate(([x,y])=>{const G=__f.G;__f.cam.x=G.core.x+3;__f.cam.y=G.core.y-(innerHeight<500?4:2);__f.cam.z=innerHeight<500?20:34;G.tut=-1;document.querySelectorAll('#tut,#tutBox').forEach(e=>e.style.display='none')},[0,0]);
 const sc=async(x,y)=>p.evaluate(([x,y])=>{const c=__f.cam;return[(x+.5-c.x)*c.z+innerWidth/2,(y+.5-c.y)*c.z+innerHeight/2]},[x,y]);
 const {cx,cy,tx,ty}=info;
 // place drills (free) left of the vertical belt column tx
@@ -26,6 +26,7 @@ await p.screenshot({path:`/workspace/factory2d_shot13_curve_${name}.png`});
 // two separate drags: vertical then horizontal starting next to corner (user's scenario)
 const r2=await p.evaluate(([cx,cy])=>{const G=__f.G;for(const q of G.blds.slice())if(!q.core)__f.dmgB?0:0;return 0},[cx,cy]);
 const drag=async(a,bb)=>{const [xa,ya]=await sc(...a),[xb,yb]=await sc(...bb);await p.mouse.move(xa,ya);await p.mouse.down();for(let k=1;k<=12;k++)await p.mouse.move(xa+(xb-xa)*k/12,ya+(yb-ya)*k/12);await p.mouse.up();};
+await p.evaluate(()=>{__f.cam.y=__f.G.core.y+(innerHeight<500?3:0);});
 const X=cx+4,Y=cy+5;await drag([X,Y-3],[X,Y]);await drag([X-1,Y],[X-4,Y]);
 const s2=await p.evaluate(([X,Y])=>{const G=__f.G;const at=(x,y)=>G.blds.find(b=>b.x===x&&b.y===y);const c=at(X,Y);c.items.push({t:'lead',p:0});const h=at(X,Y-3);h.items.length=0;h.items.push({t:'lead',p:0});__f.sim(4);return{rot:c.rot,end:at(X-4,Y).items.length+at(X-3,Y).items.length};},[X,Y]);
 ok('separate drags: corner auto-turns ('+s2.rot+')',s2.rot===2);ok('items flow past corner',s2.end>0);

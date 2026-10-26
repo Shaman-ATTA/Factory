@@ -49,3 +49,18 @@ button.on{background:#c98a3a;color:#111}button:disabled{opacity:.35}
 .sw{width:22px;height:22px;border-radius:11px;padding:0;border:2px solid transparent}.sw.sel{border-color:#fff}
 textarea{width:100%;height:46px;font-size:10px;resize:none}
 #confirm{z-index:20}
+/* ---- v7: стеклянный интерфейс ---- */
+:root{--glass:rgba(16,20,28,.62);--gb:rgba(255,255,255,.14);--acc:#f0a040}
+#res,#wave,#binfo,#tip,#build,#acts,#ctl button,#tut,#toast,#pause>div,#end>div,#confirm>div{background:var(--glass)!important;-webkit-backdrop-filter:blur(10px) saturate(140%);backdrop-filter:blur(10px) saturate(140%);border:1px solid var(--gb)!important;box-shadow:0 6px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);border-radius:12px}
+button{transition:background .18s,transform .12s,box-shadow .18s;background:linear-gradient(180deg,#323846,#232833);border-color:rgba(255,255,255,.16)}
+button:active{transform:scale(.95)}button.on,button.sel{background:linear-gradient(180deg,#ffbf6a,#d98a2e)!important;color:#1a1208;box-shadow:0 0 12px rgba(240,160,64,.45)}
+#res span{display:inline-flex;align-items:center;gap:3px}
+.ic{width:16px;height:16px;vertical-align:-3px;display:inline-block;image-rendering:auto}i.ic{transform:rotate(45deg) scale(.6);border:1px solid #0008}
+#binfo{transition:opacity .2s,transform .2s}
+#binfo .bar.am i{background:linear-gradient(90deg,#ff9a40,#ffd27a)}
+.ammo{display:flex;flex-direction:column;gap:2px;margin:4px 0}.ammo span{display:flex;align-items:center;gap:4px}
+.isel{margin:2px!important;padding:2px 4px!important;display:inline-flex;align-items:center;gap:3px}.isel.on{outline:2px solid var(--acc)}
+.panel{background:rgba(9,11,16,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .25s}
+#scrMain,#scrLevels{background:linear-gradient(180deg,rgba(8,10,16,.25),rgba(8,10,16,.55));-webkit-backdrop-filter:none;backdrop-filter:none}
+#scrMain button,#scrLevels button{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:linear-gradient(180deg,rgba(50,56,70,.75),rgba(30,34,44,.75))}
+body.inmenu #hud{visibility:hidden}
