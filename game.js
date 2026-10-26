@@ -94,9 +94,15 @@ function newB(t,x,y,r){const b={t,x,y,lv:1,pw:0,inp2:0,st:0,fuel:0,rot:r||0,hp:B
 function canPlace(t,x,y){if(!inMap(x,y)||terrain[y*MW+x]===1||bAt(x,y))return false;if(t==='drill'&&(!ORE[terrain[y*MW+x]]||terrain[y*MW+x]===6))return false;if(t==='pdrill'&&!ORE[terrain[y*MW+x]])return false;
  for(const s of G.spawns)if(Math.abs(s.x-x)<=1&&Math.abs(s.y-y)<=1)return false;return true;}
 const afford=c=>Object.entries(c).every(([k,v])=>G.res[k]>=v);
+// belt auto-join: a dead-end belt next to the new belt turns into it
+function beltOut(n){const d=DIRS[n.rot],f=bAt(n.x+d[0],n.y+d[1]);return f&&f!==n;}
+function autoJoin(b){if(!b||b.t!=='conveyor')return;const d=DIRS[b.rot];for(let k=0;k<4;k++){const nd=DIRS[k],n=bAt(b.x+nd[0],b.y+nd[1]);if(!n||n.t!=='conveyor')continue;
+ if(n.x===b.x+d[0]&&n.y===b.y+d[1])continue;// b feeds n
+ const nf=DIRS[n.rot];if(n.x+nf[0]===b.x&&n.y+nf[1]===b.y)continue;// already feeds b
+ if(beltOut(n))continue;const r=(k+2)%4;if(r!==(b.rot+2)%4)n.rot=r;}}
 function place(t,x,y,r,free){if(!canPlace(t,x,y))return false;if(!free){if(!afford(B[t].cost))return false;for(const[k,v]of Object.entries(B[t].cost))G.res[k]-=v;}
  const b=newB(t,x,y,r);G.blds.push(b);tileB[y*MW+x]=b;if(B[t].solid)calcFlow();if(isPow(t))relink();
- if(!free){puff(x+.5,y+.5,'#ffffff',5,.6);SND.play('build');vib(8);}return b;}
+ if(!free){puff(x+.5,y+.5,'#ffffff',5,.6);SND.play('build');vib(8);}if(t==='conveyor'&&!free)autoJoin(b);return b;}
 function removeB(b,refund){if(sel===b)selB(null);G.blds.splice(G.blds.indexOf(b),1);tileB[b.y*MW+b.x]=null;if(refund)for(const[k,v]of Object.entries(B[b.t].cost))G.res[k]+=v;if(B[b.t].solid)calcFlow();if(isPow(b.t))relink();}
 function makeCore(){const c=G.core;const b=newB('core',c.x,c.y);b.core=true;G.coreB=b;for(let y=-1;y<=1;y++)for(let x=-1;x<=1;x++)tileB[(c.y+y)*MW+c.x+x]=b;}
 // item transfer: offer item to building b coming from tile (sx,sy)
@@ -260,7 +266,7 @@ $('tutNext').onclick=tutAdvance;$('tutSkip').onclick=()=>{G.tut=-1;prog.tutDone=
 let toastT=0;function toast(s){const e=$('toast');e.textContent=s;e.style.opacity=1;toastT=2.2;}
 const catTools=c=>G?unlockedTools().filter(t=>B[t].cat===c):[];
 const costHtml=c=>Object.entries(c).map(([k,v])=>`<span class="${G&&G.res[k]<v?'miss':'okc'}"><i style="display:inline-block;width:8px;height:8px;background:${ITEMS[k].c};transform:rotate(45deg);margin-right:2px"></i>${v} ${ITEMS[k].n}</span>`).join(' ');
-function buildToolbar(){const C=$('cats');C.innerHTML='';for(const k of CATS){const b=document.createElement('button');b.textContent=T('cat_'+k);b.className=(k===cat?'sel':'')+(catTools(k).length?'':' empty');b.onclick=()=>{SND.play('click');cat=k;buildToolbar();};C.append(b);}
+function buildToolbar(){const C=$('cats');C.innerHTML='';for(const k of CATS){if(!catTools(k).length&&k!==cat)continue;const b=document.createElement('button');b.textContent=T('cat_'+k);b.className=(k===cat?'sel':'')+(catTools(k).length?'':' empty');b.onclick=()=>{SND.play('click');cat=k;buildToolbar();};C.append(b);}
  const Tl=$('tools');Tl.innerHTML='';const list=catTools(cat);if(!list.length)Tl.innerHTML=`<span class="none">${T('catEmpty')}</span>`;
  for(const t of list){const b=document.createElement('button');b.className='tool';b.dataset.t=t;
  const c=document.createElement('canvas');c.width=c.height=56;const x=c.getContext('2d');x.setTransform(36,0,0,36,10,10);drawBlock(x,{...newB(t,0,0,0),ang:-Math.PI/4},true);
@@ -289,13 +295,13 @@ addEventListener('pointerdown',()=>SND.init(),{capture:true});
 cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(ptrs.size===2){drag=null;const[a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:cam.z,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};}
  else if(ptrs.size===1){const[wx,wy]=toW(e.clientX,e.clientY);hover=[wx,wy];drag={sx:e.clientX,sy:e.clientY,lx:e.clientX,ly:e.clientY,moved:0,paint:(tool==='conveyor'||tool==='wall'||tool==='lwall'||delMode),last:null,t:performance.now()};
-  if(drag.paint){paintAt(Math.floor(wx),Math.floor(wy));}}});
+  if(drag.paint){drag.own=new Set();const sb=bAt(Math.floor(wx),Math.floor(wy));if(tool==='conveyor'&&sb&&sb.t==='conveyor'){drag.own.add(sb);drag.startB=sb;}paintAt(Math.floor(wx),Math.floor(wy));}}});
 cv.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);hover=toW(e.clientX,e.clientY);if(!p)return;p.x=e.clientX;p.y=e.clientY;
  if(pinch&&ptrs.size>=2){const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
   cam.z=Math.max(12,Math.min(90,pinch.z*d/pinch.d));cam.x-=(mx-pinch.mx)/cam.z;cam.y-=(my-pinch.my)/cam.z;pinch.mx=mx;pinch.my=my;clampCam();return;}
  if(drag){const dx=e.clientX-drag.lx,dy=e.clientY-drag.ly;drag.moved+=Math.abs(dx)+Math.abs(dy);drag.lx=e.clientX;drag.ly=e.clientY;
   if(drag.paint){paintAt(Math.floor(hover[0]),Math.floor(hover[1]));}else{cam.x-=dx/cam.z;cam.y-=dy/cam.z;clampCam();}}});
-function endP(e){ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(drag&&ptrs.size===0){if(!drag.paint&&drag.moved<10){const[wx,wy]=toW(e.clientX,e.clientY);tap(Math.floor(wx),Math.floor(wy));}drag=null;}}
+function endP(e){ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(drag&&ptrs.size===0){if(drag.paint&&drag.startB&&drag.moved<10){const sb=drag.startB;sb.rot=(sb.rot+1)%4;rot=sb.rot;SND.play('click');}if(!drag.paint&&drag.moved<10){const[wx,wy]=toW(e.clientX,e.clientY);tap(Math.floor(wx),Math.floor(wy));}drag=null;}}
 cv.addEventListener('pointerup',endP);cv.addEventListener('pointercancel',endP);
 cv.addEventListener('wheel',e=>{e.preventDefault();const[wx,wy]=toW(e.clientX,e.clientY);cam.z=Math.max(12,Math.min(90,cam.z*(e.deltaY<0?1.12:.89)));const[nx,ny]=toW(e.clientX,e.clientY);cam.x+=wx-nx;cam.y+=wy-ny;clampCam();},{passive:false});
 let hover=null;
@@ -306,17 +312,24 @@ function failMsg(t,x,y){if(!afford(B[t].cost))toast(T('noRes'));else if(t==='dri
 function paintAt(x,y){if(!G||G.over)return;const l=drag.last;if(l&&l[0]===x&&l[1]===y)return;
  if(delMode){const b=bAt(x,y);if(b&&!b.core){removeB(b,true);puff(x+.5,y+.5,'#f66',5,.6);SND.play('remove');}drag.last=[x,y];return;}
  if(l){let cx=l[0],cy=l[1];while(cx!==x||cy!==y){let r2;if(cx!==x){r2=x>cx?0:2;}else r2=y>cy?1:3;
-   const pb=bAt(cx,cy);if(tool==='conveyor'&&pb&&pb.t==='conveyor'&&pb.placedNow)pb.rot=r2;rot=r2;cx+=DIRS[r2][0];cy+=DIRS[r2][1];const nb=place(tool,cx,cy,r2);if(nb)nb.placedNow=true;}}
- else{const nb=place(tool,x,y,rot);if(nb)nb.placedNow=true;else if(!afford(B[tool].cost))failMsg(tool,x,y);}
+   const pb=bAt(cx,cy);if(tool==='conveyor'&&pb&&drag.own.has(pb)){pb.rot=r2;drag.startB=null;autoJoin(pb);}rot=r2;cx+=DIRS[r2][0];cy+=DIRS[r2][1];const nb=place(tool,cx,cy,r2);if(nb)drag.own.add(nb);}}
+ else{const nb=place(tool,x,y,rot);if(nb)drag.own.add(nb);else if(!afford(B[tool].cost))failMsg(tool,x,y);}
  drag.last=[x,y];}
 function tap(x,y){if(!G||G.over)return;const b=bAt(x,y);
  if(tool){if(place(tool,x,y,rot))return;if(b&&!b.core){tool=null;updTools();selB(b);return;}failMsg(tool,x,y);return;}
  selB(b||null);if(b)SND.play('click');}
 // ---------- drawing ----------
+// curve side: +1 input from local +y side, -1 from -y side, 0 straight
+function beltCurve(b){const d=DIRS[b.rot];let back=0,side=0,sd=0;for(let k=0;k<4;k++){const n=bAt(b.x+DIRS[k][0],b.y+DIRS[k][1]);if(!n||n.t!=='conveyor')continue;const nf=DIRS[n.rot];if(n.x+nf[0]!==b.x||n.y+nf[1]!==b.y)continue;
+ if(k===(b.rot+2)%4)back++;else if(k!==b.rot){side++;sd=k===(b.rot+1)%4?1:-1;}}return back===0&&side===1?sd:0;}
 function drawItem(c,it,x,y,s){c.fillStyle=ITEMS[it].c;c.beginPath();c.moveTo(x,y-s);c.lineTo(x+s,y);c.lineTo(x,y+s);c.lineTo(x-s,y);c.closePath();c.fill();c.strokeStyle='#0009';c.lineWidth=.04;c.stroke();}
 function rr(c,x,y,w,h,col,ol){c.fillStyle=col;c.fillRect(x,y,w,h);if(ol){c.strokeStyle=ol;c.lineWidth=.06;c.strokeRect(x+.03,y+.03,w-.06,h-.06);}}
 function drawBlock(c,b,icon){const T=b.t,x=b.x,y=b.y,t=icon?0:now/1000;
- if(T==='conveyor'){c.save();c.translate(x+.5,y+.5);c.rotate(b.rot*Math.PI/2);rr(c,-.5,-.42,1,.84,'#4a4f5a');rr(c,-.5,-.32,1,.64,'#24272e');
+ if(T==='conveyor'){const cs=icon?0:beltCurve(b);if(cs){c.save();c.translate(x+.5,y+.5);c.rotate(b.rot*Math.PI/2);c.beginPath();c.rect(-.5,-.5,1,1);c.clip();const cy0=cs*.5;
+   c.lineCap='butt';c.strokeStyle='#4a4f5a';c.lineWidth=.84;c.beginPath();c.arc(.5,cy0,.5,0,7);c.stroke();c.strokeStyle='#24272e';c.lineWidth=.64;c.beginPath();c.arc(.5,cy0,.5,0,7);c.stroke();
+   c.strokeStyle='#7d8595';c.lineWidth=.07;c.setLineDash([.12,.2]);c.lineDashOffset=-t*2.6*.8;c.beginPath();if(cs>0)c.arc(.5,cy0,.5,Math.PI,Math.PI*1.5);else c.arc(.5,cy0,.5,Math.PI,Math.PI/2,true);c.stroke();c.setLineDash([]);c.restore();
+   for(const it of b.items){const th=Math.PI+cs*Math.min(1,it.p)*Math.PI/2;const lx=.5+.5*Math.cos(th),ly=cy0+.5*Math.sin(th);const d=DIRS[b.rot];const wx=d[0]*lx-d[1]*ly,wy=d[1]*lx+d[0]*ly;drawItem(c,it.t,x+.5+wx,y+.5+wy,.17);}return;}
+  c.save();c.translate(x+.5,y+.5);c.rotate(b.rot*Math.PI/2);rr(c,-.5,-.42,1,.84,'#4a4f5a');rr(c,-.5,-.32,1,.64,'#24272e');
   c.strokeStyle='#7d8595';c.lineWidth=.08;const off=(t*2.6)%(1/3);for(let i=-1;i<3;i++){const px=-.5+i/3+off;if(px<-.45||px>.45)continue;c.beginPath();c.moveTo(px-.1,-.18);c.lineTo(px+.04,0);c.lineTo(px-.1,.18);c.stroke();}
   c.restore();if(!icon)for(const it of b.items){const d=DIRS[b.rot];drawItem(c,it.t,x+.5+d[0]*(it.p-.5),y+.5+d[1]*(it.p-.5),.17);}if(icon){drawItem(c,'copper',x+.5,y+.5,.17);}return;}
  if(T==='router'){rr(c,x+.05,y+.05,.9,.9,'#555b68','#22252c');rr(c,x+.3,y+.3,.4,.4,'#2a2d34');if(b.buf&&b.buf[0])drawItem(c,b.buf[0].t,x+.5,y+.5,.15);
@@ -479,4 +492,4 @@ function updUnits(dt){for(const b of G.blds){
 applySettings();show('scrMain');requestAnimationFrame(loop);
 // отладочные хуки для автотестов
 function sim(sec,dt){dt=dt||.05;for(let t=0;t<sec&&G&&!G.over;t+=dt)step(dt);return G&&{over:G.over,wave:G.wave,core:G.coreB.hp,kills:G.stats.kills,en:enemies.length};}
-window.__f={get G(){return G},cam,start,place,startWave,get enemies(){return enemies},setTool:t=>{tool=t;updTools();},TUT,sim,get prog(){return prog},LEVELS,B,waveList,dmgB,tutAdvance,get S(){return S},doUpgrade,upCost,relink,get units(){return G.units},waveList};
+window.__f={get G(){return G},cam,start,place,startWave,get enemies(){return enemies},setTool:t=>{tool=t;updTools();},TUT,sim,get prog(){return prog},LEVELS,B,waveList,dmgB,tutAdvance,get S(){return S},canPlace,removeB,doUpgrade,upCost,relink,get units(){return G.units},waveList};
