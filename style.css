@@ -68,3 +68,17 @@ body.inmenu #hud{visibility:hidden}
 #res{font-variant-numeric:tabular-nums;display:grid!important;grid-template-columns:repeat(2,64px);gap:2px 8px!important;max-width:none!important}#res span b{flex:1;text-align:right;font-weight:600;min-width:38px}
 #wave{font-variant-numeric:tabular-nums;width:128px;box-sizing:border-box;white-space:normal}
 @media (orientation:landscape){#res{grid-auto-flow:column;grid-template-columns:none!important;grid-template-rows:auto}#res span{width:64px}}
+/* Mindustry-style block menu & actions */
+#bar{align-items:flex-end}
+#build{display:grid!important;grid-template-columns:auto auto;grid-template-areas:"coll coll" "tools cats";padding:4px;border-radius:12px;order:2;max-width:none!important}
+#bColl{grid-area:coll;justify-self:end;height:18px;padding:0 10px;font-size:12px;margin-bottom:2px}
+#build.coll #tools,#build.coll #cats{display:none}
+#tools{grid-area:tools;display:grid!important;grid-template-columns:repeat(4,50px);grid-auto-rows:56px;gap:3px;max-height:116px;overflow-y:auto;overflow-x:hidden}
+.tool{width:50px!important;height:56px}
+#cats{grid-area:cats;display:flex!important;flex-direction:column;gap:3px;margin:0 0 0 4px!important;border-left:1px solid #fff2;padding-left:4px}
+#cats button{width:40px;height:34px;padding:0!important;border-radius:8px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+#cats button i{font-style:normal;font-size:16px}#cats button span{font-size:7px;opacity:.75;max-width:40px;overflow:hidden;white-space:nowrap}
+#acts{order:1;flex-direction:column-reverse;padding:4px;border-radius:12px}#acts button{width:46px!important;height:42px!important;font-size:18px!important;position:relative;transition:transform .15s}
+#acts button.hide{display:none}#bOk{background:#2c6a35!important}#okN{position:absolute;top:1px;right:3px;font-size:9px}#bCancel{color:#ff8080}
+#tip{left:calc(64px + env(safe-area-inset-left))!important;bottom:auto!important;top:96px;max-width:min(300px,60vw)!important}
+#wave{width:156px!important;font-size:12px!important;line-height:1.25}

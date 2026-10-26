@@ -4,7 +4,7 @@ for(const [name,vp] of [['portrait',{viewport:{width:412,height:915},isMobile:tr
 const p=await (await b.newContext(vp)).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>m.type()==='error'&&errs.push(m.text()));
 const ok=(n,v)=>console.log(name,(v?'OK  ':'FAIL')+' '+n);
 await p.goto('http://127.0.0.1:8091/');await p.waitForTimeout(500);
-const info=await p.evaluate(()=>{__f.start(0);const G=__f.G;G.tut=-1;G.wT=999;G.res.copper=500;const cx=G.core.x,cy=G.core.y;
+const info=await p.evaluate(()=>{__f.start(0);__f.INP.instant=true;__f.S.confirm=false;const G=__f.G;G.tut=-1;G.wT=999;G.res.copper=500;const cx=G.core.x,cy=G.core.y;
  // clear area: find spot: drill column at cx+6, from cy-6.. ; force ore & free
  const tx=cx+6,ty=cy-5;__f.cam.x=cx+3;__f.cam.y=cy-2;__f.cam.z=innerHeight<500?20:34;
  for(const q of __f.G.blds.slice())if(!q.core)__f.G.blds.splice(__f.G.blds.indexOf(q),1);

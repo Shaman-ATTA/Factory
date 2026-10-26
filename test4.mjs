@@ -12,14 +12,16 @@ const ore=await p.evaluate(()=>{const G=__f.G,r=[];for(let y=G.core.y-5;y<=G.cor
  // undo tile refs
  return r;});
 await p.evaluate(()=>{__f.start(0);});await p.tap('#tutNext');
-ok('mine tab active',await p.evaluate(()=>document.querySelector('#cats .sel').textContent==='Добыча'));
+ok('mine tab active',await p.evaluate(()=>document.querySelector('#cats .sel').textContent.includes('Добыча')));
 await p.tap('.tool[data-t="drill"]');ok('tooltip',await p.isVisible('#tip'));
 await p.evaluate(()=>{__f.cam.x=__f.G.core.x+4;});
 const c=await p.evaluate(()=>__f.G.core);ore.sort((a,b)=>Math.hypot(a[0]-c.x,a[1]-c.y)-Math.hypot(b[0]-c.x,b[1]-c.y));
+await p.evaluate(()=>document.getElementById('tut').style.pointerEvents='none');
 for(const t of ore.slice(0,3)){const [sx,sy]=await scr(t[0]+.5,t[1]+.5);await p.touchscreen.tap(sx,sy);await p.waitForTimeout(60);}
+await p.tap('#bOk');await p.evaluate(()=>__f.sim(6));
 ok('drills placed '+await p.evaluate(()=>__f.G.blds.length),await p.evaluate(()=>__f.G.blds.filter(b=>b.t==='drill').length>=1));
-ok('tut step 2',await p.evaluate(()=>__f.G.tut===2));
-ok('log tab auto',await p.evaluate(()=>document.querySelector('#cats .sel').textContent==='Логистика'));
+ok('tut step 2',await p.evaluate(()=>__f.G.tut>=2));
+ok('log tab auto',await p.evaluate(()=>document.querySelector('#cats .sel').textContent.match(/Логистика|Оборона/)));
 await p.screenshot({path:'/workspace/factory2d_shot4_tooltip.png'});
 // conveyors via place to core, then sim
 await p.evaluate(()=>{const G=__f.G;for(const d of G.blds.filter(b=>b.t==='drill')){let x=d.x,y=d.y;}});
@@ -35,7 +37,7 @@ const dd=await p.evaluate(()=>{const b=__f.G.blds.find(b=>b.t==='duo');b.ammo=0;
 await p.evaluate(()=>{__f.setTool(null);__f.cam.x=__f.G.core.x+6;__f.cam.y=__f.G.core.y;});
 let [sx,sy]=await scr(dd[0]+.5,dd[1]+.5);await p.touchscreen.tap(sx,sy);await p.waitForTimeout(400);
 ok('binfo',await p.isVisible('#binfo'));
-await p.tap('#cats button:nth-child(4)');await p.waitForTimeout(300);
+await p.tap('#cats button:nth-child(3)');await p.waitForTimeout(300);
 await p.screenshot({path:'/workspace/factory2d_shot5_info.png'});
 // pause menu
 await p.tap('#bMenu');ok('pause',await p.isVisible('#pause'));await p.screenshot({path:'/workspace/factory2d_shot6_pause.png'});

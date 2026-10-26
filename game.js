@@ -50,7 +50,7 @@ const ORDER=['conveyor','drill','pdrill','router','unloader','press','smelter','
 // ---------- state ----------
 let G=null; // level state
 let prog=Object.assign({unlocked:1,done:[],stars:[]},Auth.get('prog',{}));
-const SDEF={music:.5,sfx:.7,quality:'high',dpr:2,fps:false,ui:1,lang:'ru',vib:true,shake:true};
+const SDEF={music:.5,sfx:.7,quality:'high',dpr:2,fps:false,ui:1,lang:'ru',vib:true,shake:true,confirm:true};
 let S=Object.assign({},SDEF,Auth.get('settings',{}));
 function applySettings(){LANG=I18N[S.lang]?S.lang:'ru';document.documentElement.style.setProperty('--ui',S.ui);SND.setVol({music:S.music,sfx:S.sfx});$('fps').classList.toggle('hide',!S.fps);resize();applyI18n();}
 function saveSettings(){Auth.set('settings',S);}
@@ -237,7 +237,7 @@ function renderSettings(){const f=$('setForm');const rg=(k,min,max,st)=>`<input 
  f.innerHTML=`<span>${T('set_music')}</span>${rg('music',0,1,.05)}<span>${T('set_sfx')}</span>${rg('sfx',0,1,.05)}
  <span>${T('set_quality')}</span>${sl('quality',[['low',T('q_low')],['high',T('q_high')]])}<span>Pixel ratio</span>${sl('dpr',[[1,'1×'],[1.5,'1.5×'],[2,'2×']])}
  <span>${T('set_ui')}</span>${sl('ui',[[.85,'85%'],[1,'100%'],[1.15,'115%'],[1.3,'130%']])}<span>${T('set_lang')}</span>${sl('lang',Object.keys(I18N).map(k=>[k,k==='ru'?'Русский':k]))}
- <span>${T('set_fps')}</span>${ck('fps')}<span>${T('set_vib')}</span>${ck('vib')}<span>${T('set_shake')}</span>${ck('shake')}<span></span><button id="sReset">${T('set_reset')}</button>`;
+ <span>${T('set_fps')}</span>${ck('fps')}<span>${T('set_vib')}</span>${ck('vib')}<span>${T('set_shake')}</span>${ck('shake')}<span>${T('set_confirm')}</span>${ck('confirm')}<span></span><button id="sReset">${T('set_reset')}</button>`;
  f.querySelectorAll('[data-k]').forEach(e=>e.oninput=e.onchange=()=>{const k=e.dataset.k;S[k]=e.type==='checkbox'?e.checked:e.type==='range'?+e.value:(isNaN(+e.value)?e.value:+e.value);saveSettings();applySettings();if(k==='sfx')SND.play('build');});
  $('sReset').onclick=()=>confirmBox(T('confirmReset'),()=>{prog={unlocked:1,done:[],stars:[]};Auth.del('game');Auth.del('scores');G=null;save();toast(T('resetDone'));show('scrMain');});}
 const COLORS=['#f0a040','#e2584a','#4ab0e2','#6ccf6a','#b07ae0','#e0d040','#e070b0','#cccccc'];let newColor=COLORS[2];
@@ -276,12 +276,12 @@ $('tutNext').onclick=tutAdvance;$('tutSkip').onclick=()=>{G.tut=-1;prog.tutDone=
 let toastT=0;function toast(s){const e=$('toast');e.textContent=s;e.style.opacity=1;toastT=2.2;}
 const catTools=c=>G?unlockedTools().filter(t=>B[t].cat===c):[];
 const costHtml=c=>Object.entries(c).map(([k,v])=>`<span class="${G&&G.res[k]<v?'miss':'okc'}">${itemIc(k)}${v} ${ITEMS[k].n}</span>`).join(' ');
-function buildToolbar(){const C=$('cats');C.innerHTML='';for(const k of CATS){if(!catTools(k).length&&k!==cat)continue;const b=document.createElement('button');b.textContent=T('cat_'+k);b.className=(k===cat?'sel':'')+(catTools(k).length?'':' empty');b.onclick=()=>{SND.play('click');cat=k;buildToolbar();};C.append(b);}
+function buildToolbar(){const C=$('cats');C.innerHTML='';for(const k of CATS){if(!catTools(k).length&&k!==cat)continue;const b=document.createElement('button');b.innerHTML=`<i>${({mine:'⛏',log:'⇶',prod:'⚙',def:'🛡',pow:'⚡'})[k]}</i><span>${T('cat_'+k)}</span>`;b.className=(k===cat?'sel':'')+(catTools(k).length?'':' empty');b.onclick=()=>{SND.play('click');cat=k;buildToolbar();};C.append(b);}
  const Tl=$('tools');Tl.innerHTML='';const list=catTools(cat);if(!list.length)Tl.innerHTML=`<span class="none">${T('catEmpty')}</span>`;
  for(const t of list){const b=document.createElement('button');b.className='tool';b.dataset.t=t;
  const c=document.createElement('canvas');c.width=c.height=56;const x=c.getContext('2d');x.setTransform(36,0,0,36,10,10);drawBlock(x,{...newB(t,0,0,0),ang:-Math.PI/4},true);
  b.append(c);b.insertAdjacentHTML('beforeend',`<span>${B[t].n}</span>`);
- b.onclick=()=>{SND.play('click');delMode=false;tool=tool===t?null:t;selB(null);updTools();};Tl.append(b);}updTools();}
+ b.onclick=()=>{SND.play('click');delMode=false;if(typeof INP!=='undefined'){INP.mode='none';}tool=tool===t?null:t;selB(null);updTools();if(window.updActs)updActs();};Tl.append(b);}updTools();}
 function updTools(){document.querySelectorAll('.tool').forEach(b=>{b.classList.toggle('sel',b.dataset.t===tool);b.classList.toggle('poor',!afford(B[b.dataset.t].cost));});$('bDel').classList.toggle('on',delMode);
  const tp=$('tip');if(tool&&G){const d=B[tool];let h=`<b>${d.n}</b> — ${T('d_'+tool)}<br>${T('cost')}: ${costHtml(d.cost)}`;if(d.turret&&d.ammo)h+=ammoList(tool);
   if(d.turret)h+=`<br>${T('range')}: ${d.range} · ${T('dmg')}: ${d.laser||Object.values(d.ammo).join('/')}`;h+=` · ${T('hp')}: ${d.hp}`;tp.innerHTML=h;tp.classList.remove('hide');}else tp.classList.add('hide');}
@@ -304,17 +304,7 @@ function renderSel(){const b=sel,d=B[b.t];if(!G.blds.includes(b)&&!b.core){selB(
 const ptrs=new Map();let pinch=null,drag=null;
 const toW=(sx,sy)=>[(sx-W/2)/cam.z+cam.x,(sy-H/2)/cam.z+cam.y];
 addEventListener('pointerdown',()=>SND.init(),{capture:true});
-cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(ptrs.size===2){drag=null;const[a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:cam.z,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};}
- else if(ptrs.size===1){const[wx,wy]=toW(e.clientX,e.clientY);hover=[wx,wy];drag={sx:e.clientX,sy:e.clientY,lx:e.clientX,ly:e.clientY,moved:0,paint:(tool==='conveyor'||tool==='wall'||tool==='lwall'||delMode),last:null,t:performance.now()};
-  if(drag.paint){drag.own=new Set();const sb=bAt(Math.floor(wx),Math.floor(wy));if(tool==='conveyor'&&sb&&sb.t==='conveyor'){drag.own.add(sb);drag.startB=sb;}paintAt(Math.floor(wx),Math.floor(wy));}}});
-cv.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);hover=toW(e.clientX,e.clientY);if(!p)return;p.x=e.clientX;p.y=e.clientY;
- if(pinch&&ptrs.size>=2){const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-  cam.z=Math.max(12,Math.min(90,pinch.z*d/pinch.d));cam.x-=(mx-pinch.mx)/cam.z;cam.y-=(my-pinch.my)/cam.z;pinch.mx=mx;pinch.my=my;clampCam();return;}
- if(drag){const dx=e.clientX-drag.lx,dy=e.clientY-drag.ly;drag.moved+=Math.abs(dx)+Math.abs(dy);drag.lx=e.clientX;drag.ly=e.clientY;
-  if(drag.paint){paintAt(Math.floor(hover[0]),Math.floor(hover[1]));}else{cam.x-=dx/cam.z;cam.y-=dy/cam.z;clampCam();}}});
-function endP(e){ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(drag&&ptrs.size===0){if(drag.paint&&drag.startB&&drag.moved<10){const sb=drag.startB;sb.rot=(sb.rot+1)%4;rot=sb.rot;SND.play('click');}if(!drag.paint&&drag.moved<10){const[wx,wy]=toW(e.clientX,e.clientY);tap(Math.floor(wx),Math.floor(wy));}drag=null;}}
-cv.addEventListener('pointerup',endP);cv.addEventListener('pointercancel',endP);
+// pointer gestures: see input.js (Mindustry-style)
 cv.addEventListener('wheel',e=>{e.preventDefault();const[wx,wy]=toW(e.clientX,e.clientY);cam.z=Math.max(12,Math.min(90,cam.z*(e.deltaY<0?1.12:.89)));const[nx,ny]=toW(e.clientX,e.clientY);cam.x+=wx-nx;cam.y+=wy-ny;clampCam();},{passive:false});
 let hover=null;
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='KeyR')$('bRot').onclick();if(e.code==='Space'&&G){paused=!paused;updCtl();}if(e.code==='Escape'){tool=null;delMode=false;selB(null);updTools();}});
@@ -504,4 +494,4 @@ function updUnits(dt){for(const b of G.blds){
 applySettings();show('scrMain');requestAnimationFrame(loop);
 // отладочные хуки для автотестов
 function sim(sec,dt){dt=dt||.05;for(let t=0;t<sec&&G&&!G.over;t+=dt)step(dt);return G&&{over:G.over,wave:G.wave,core:G.coreB.hp,kills:G.stats.kills,en:enemies.length};}
-window.__f={beltCurve:b=>beltCurve(b),get G(){return G},cam,start,place,startWave,get enemies(){return enemies},setTool:t=>{tool=t;updTools();},TUT,sim,get prog(){return prog},LEVELS,B,waveList,dmgB,tutAdvance,get S(){return S},canPlace,removeB,doUpgrade,upCost,relink,get units(){return G.units},waveList};
+window.__f={get INP(){return INP},commit:()=>commitPlans(),beltCurve:b=>beltCurve(b),get G(){return G},cam,start,place,startWave,get enemies(){return enemies},setTool:t=>{tool=t;updTools();},TUT,sim,get prog(){return prog},LEVELS,B,waveList,dmgB,tutAdvance,get S(){return S},canPlace,removeB,doUpgrade,upCost,relink,get units(){return G.units},waveList};
