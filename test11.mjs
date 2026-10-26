@@ -4,7 +4,7 @@ const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>m.type
 await p.goto('http://127.0.0.1:8091/');await p.waitForTimeout(700);
 const r=await p.evaluate(()=>{const f=__f;f.start('E');const G=f.G;G.tut=-1;G.wT=999;const out={};
  // find empty row
- let Y=-1,X=-1;for(let y=2;y<26&&Y<0;y++)for(let x=2;x<30;x++){let ok=true;for(let i=0;i<14;i++)for(let dy=-1;dy<=1;dy++)if(!f.canPlace('conveyor',x+i,y+dy))ok=false;if(ok){Y=y;X=x;break;}}
+ let Y=-1,X=-1;for(let y=2;y<26&&Y<0;y++)for(let x=2;x<30;x++){let ok=true;for(let i=0;i<14;i++)for(let dy=-1;dy<=4;dy++)if(!f.canPlace('conveyor',x+i,y+dy))ok=false;if(ok){Y=y;X=x;break;}}
  out.row=[X,Y];const res=G.res;res.copper=res.lead=res.titanium=999;
  // source: feed items manually into belt 0; belt→sorter→belt / sides
  f.place('conveyor',X,Y,0,true);f.place('sorter',X+1,Y,0,true);f.place('conveyor',X+2,Y,0,true);f.place('conveyor',X+1,Y+1,1,true);f.place('conveyor',X+1,Y-1,3,true);

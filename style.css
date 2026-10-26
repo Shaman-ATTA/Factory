@@ -87,3 +87,8 @@ body.inmenu #hud{visibility:hidden}
 @media (orientation:portrait){#ctl{display:grid!important;grid-template-columns:repeat(2,38px);gap:3px}#ctl button{padding:4px 0!important;font-size:13px}#ctl #bWave span{display:none}#wave{width:140px!important}#mini{top:calc(env(safe-area-inset-top) + 84px)}}
 @media (orientation:landscape){#mini{top:calc(env(safe-area-inset-top) + 48px)}}
 #top #wave{pointer-events:none}
+.rbank{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin:4px 0}.rbank span{display:inline-flex;align-items:center;gap:2px}
+.rtree{max-height:58vh;overflow:auto;text-align:left;width:100%}
+.rn{display:flex;align-items:center;gap:8px;padding:4px 6px;margin:3px 0;border-radius:8px;background:#ffffff0d;border-left:3px solid #666}
+.rn canvas{width:28px;height:28px;flex:none}.rn>div{flex:1;font-size:13px}.rn small span{display:inline-flex;align-items:center;margin-right:4px}
+.rn.done,.rn.camp{border-color:#6c6}.rn.open{border-color:#f0a040}.rn.lock{opacity:.5}.rn button{padding:4px 10px;font-size:13px}
