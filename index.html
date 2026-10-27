@@ -30,5 +30,6 @@
 <input type="file" id="fileIn" accept=".txt,.f2d,text/plain" class="hide">
 <script src="firebase-config.js"></script><script src="i18n.js"></script><script src="audio.js"></script><script src="auth.js"></script><script src="game.js"></script>
 <script src="gfx.js"></script><script src="input.js"></script><script src="features.js"></script><script src="world.js"></script><script src="content.js"></script>
-<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+<script>if('serviceWorker'in navigator)!/FactoryApp/.test(navigator.userAgent)&&navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+<script>if(!/FactoryApp/.test(navigator.userAgent)&&/Android/.test(navigator.userAgent)){const a=document.createElement('a');a.href='https://github.com/Shaman-ATTA/Factory/releases/latest/download/Factory-Rubezh.apk';a.textContent='📱 Скачать APK';a.className='sm';a.style.cssText='display:block;margin-top:8px;color:#8cf';document.querySelector('#scrMain .col').after(a);}</script>
 </body></html>

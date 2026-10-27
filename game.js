@@ -499,3 +499,14 @@ applySettings();show('scrMain');requestAnimationFrame(loop);
 // отладочные хуки для автотестов
 function sim(sec,dt){dt=dt||.05;for(let t=0;t<sec&&G&&!G.over;t+=dt)step(dt);return G&&{over:G.over,wave:G.wave,core:G.coreB.hp,kills:G.stats.kills,en:enemies.length};}
 window.__f={get INP(){return INP},commit:()=>commitPlans(),beltCurve:b=>beltCurve(b),get G(){return G},cam,start,place,startWave,get enemies(){return enemies},setTool:t=>{tool=t;updTools();},TUT,sim,get prog(){return prog},LEVELS,B,waveList,dmgB,tutAdvance,get S(){return S},canPlace,removeB,doUpgrade,upCost,relink,get units(){return G.units},waveList};
+
+// Android back button hook (called by the APK wrapper). Returns true if handled.
+window.androidBack=function(){
+ const vis=id=>!$(id).classList.contains('hide');
+ if(vis('confirm')){$('confirm').classList.add('hide');return true;}
+ if(tool||delMode){tool=null;delMode=false;try{selB(null);updTools();}catch(e){}return true;}
+ if(vis('pause')){hideScreens();paused=false;updCtl();return true;}
+ for(const id of SCR){if(id!=='scrMain'&&id!=='pause'&&vis(id)){const b=$(id).querySelector('.back');if(b){b.click();return true;}}}
+ if(G&&!vis('scrMain')){save();show('pause');return true;}
+ return false;
+};

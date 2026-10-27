@@ -25,3 +25,7 @@ service cloud.firestore {
 window.FIREBASE_CONFIG = { apiKey: "...", authDomain: "...", projectId: "...", appId: "..." };
 ```
 6. Увеличьте версию кэша в `sw.js` и запушьте изменения.
+
+## Android APK
+
+[Скачать APK](https://github.com/Shaman-ATTA/Factory/releases/latest/download/Factory-Rubezh.apk) — офлайн-приложение. При установке разрешите «Установка из неизвестных источников». Исходники обёртки: `android/` (сборка: `android/build.sh`).
