@@ -1,6 +1,6 @@
 package io.github.shamanatta.factory;
 import android.app.Activity;import android.app.AlertDialog;import android.os.Bundle;import android.view.View;import android.view.WindowManager;
-import android.webkit.*;
+import android.webkit.*;import android.os.Vibrator;import android.os.VibrationEffect;import android.content.Context;import android.os.Build;
 public class MainActivity extends Activity {
   WebView w;
   @Override protected void onCreate(Bundle b){super.onCreate(b);
@@ -9,7 +9,7 @@ public class MainActivity extends Activity {
     s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setDatabaseEnabled(true);s.setAllowFileAccess(true);
     s.setMediaPlaybackRequiresUserGesture(false);s.setUserAgentString(s.getUserAgentString()+" FactoryApp/13");
     w.setWebChromeClient(new WebChromeClient());w.setWebViewClient(new WebViewClient());
-    setContentView(w);immersive();
+    w.addJavascriptInterface(new Bridge(),"AndroidBridge");setContentView(w);immersive();
     if(b!=null)w.restoreState(b);else w.loadUrl("file:///android_asset/www/index.html");}
   void immersive(){w.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);}
   @Override public void onWindowFocusChanged(boolean f){super.onWindowFocusChanged(f);if(f)immersive();}
@@ -19,5 +19,7 @@ public class MainActivity extends Activity {
   @Override public void onBackPressed(){
     w.evaluateJavascript("(window.androidBack&&window.androidBack())?'1':'0'",r->{
       if(r!=null&&r.contains("1"))return;
-      new AlertDialog.Builder(this).setMessage("Выйти из игры?").setPositiveButton("Выйти",(d,i)->finish()).setNegativeButton("Отмена",null).show();});}
+      boolean ru=java.util.Locale.getDefault().getLanguage().equals("ru");new AlertDialog.Builder(this).setMessage(ru?"Выйти из игры?":"Exit the game?").setPositiveButton(ru?"Выйти":"Exit",(d,i)->finish()).setNegativeButton(ru?"Отмена":"Cancel",null).show();});}
+  class Bridge{ @JavascriptInterface public void vibrate(int ms){try{Vibrator v=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);if(v==null)return;ms=Math.max(1,Math.min(ms,1000));
+    if(Build.VERSION.SDK_INT>=26)v.vibrate(VibrationEffect.createOneShot(ms,VibrationEffect.DEFAULT_AMPLITUDE));else v.vibrate(ms);}catch(Exception e){}} }
 }

@@ -92,3 +92,12 @@ body.inmenu #hud{visibility:hidden}
 .rn{display:flex;align-items:center;gap:8px;padding:4px 6px;margin:3px 0;border-radius:8px;background:#ffffff0d;border-left:3px solid #666}
 .rn canvas{width:28px;height:28px;flex:none}.rn>div{flex:1;font-size:13px}.rn small span{display:inline-flex;align-items:center;margin-right:4px}
 .rn.done,.rn.camp{border-color:#6c6}.rn.open{border-color:#f0a040}.rn.lock{opacity:.5}.rn button{padding:4px 10px;font-size:13px}
+#scrWiki{display:flex;flex-direction:column;max-height:94vh;width:min(96vw,640px)}#scrWiki.hide{display:none}
+.wbody{overflow-y:auto;-webkit-overflow-scrolling:touch;text-align:left;flex:1;padding:0 4px;margin:6px 0}
+.wnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;position:sticky;top:0;background:rgba(20,22,28,.95);padding:4px 0;z-index:1}.wnav button{padding:6px 9px;font-size:13px}
+.wbody h3{color:#f0a040;margin:12px 0 6px;font-size:16px}
+.wk{display:flex;gap:10px;background:rgba(255,255,255,.05);border-radius:10px;padding:8px;margin-bottom:8px;font-size:13px;line-height:1.35}
+.wk canvas{width:48px;height:48px;flex:none}.wk p{margin:4px 0}.wk.lk{opacity:.75}.wk.hl{outline:2px solid #f0a040}
+.wl{color:#f0c040;font-size:12px}.ws{display:flex;flex-wrap:wrap;gap:4px 10px;color:#cfd6e0;font-size:12px}.ws i,.wu i{color:#8a94a6;font-style:normal}
+.wi{width:48px;flex:none;text-align:center;font-size:22px}.edot{display:inline-block;width:26px;height:26px;border-radius:50%;margin-top:6px}
+.wbtn{padding:2px 9px;margin-left:6px;font-size:14px}

@@ -1,4 +1,4 @@
-# Фабрика: Рубеж
+# Factory Frontier
 
 2D-игра: строишь фабрику и обороняешь базу. Работает в браузере, можно установить как PWA. Играть: https://shaman-atta.github.io/Factory/
 
@@ -28,4 +28,4 @@ window.FIREBASE_CONFIG = { apiKey: "...", authDomain: "...", projectId: "...", a
 
 ## Android APK
 
-[Скачать APK](https://github.com/Shaman-ATTA/Factory/releases/latest/download/Factory-Rubezh.apk) — офлайн-приложение. При установке разрешите «Установка из неизвестных источников». Исходники обёртки: `android/` (сборка: `android/build.sh`).
+[Скачать APK](https://github.com/Shaman-ATTA/Factory/releases/latest/download/Factory-Frontier.apk) — офлайн-приложение. При установке разрешите «Установка из неизвестных источников». Исходники обёртки: `android/` (сборка: `android/build.sh`).

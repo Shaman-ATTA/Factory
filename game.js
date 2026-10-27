@@ -54,7 +54,7 @@ const SDEF={music:.5,sfx:.7,quality:'high',dpr:2,fps:false,ui:1,lang:'ru',vib:tr
 let S=Object.assign({},SDEF,Auth.get('settings',{}));
 function applySettings(){LANG=I18N[S.lang]?S.lang:'ru';document.documentElement.style.setProperty('--ui',S.ui);SND.setVol({music:S.music,sfx:S.sfx});$('fps').classList.toggle('hide',!S.fps);resize();applyI18n();}
 function saveSettings(){Auth.set('settings',S);}
-const vib=ms=>{if(S.vib&&navigator.vibrate)try{navigator.vibrate(ms)}catch(e){}};
+const vib=ms=>{if(window.VIB)VIB(ms);else if(S.vib&&navigator.vibrate)try{navigator.vibrate(ms)}catch(e){}};
 const MW=72,MH=42;
 let terrain,tileB,flow,mapImg;
 let cam={x:20,y:14,z:36},speed=1,paused=false,tool=null,rot=0,delMode=false,cat='mine',sel=null;
@@ -178,7 +178,7 @@ function updEnemy(e,dt){const E=ENEMY[e.type];if(E.boss)bossAbil(e,E,dt);if(E.fl
  e.x+=e.vx*dt;e.y+=e.vy*dt;e.ang=Math.atan2(e.vy,e.vx);e.walk+=dt*s*8;
  if(terrain[ty*MW+tx]!==1&&terrain[Math.floor(e.y)*MW+Math.floor(e.x)]===1){const ox=e.x-e.vx*dt,oy=e.y-e.vy*dt;const rk=(x,y)=>terrain[Math.floor(y)*MW+Math.floor(x)]===1;
   if(!rk(e.x,oy))e.y=oy;else if(!rk(ox,e.y))e.x=ox;else{e.x=ox+(tx+.5-ox)*.2;e.y=oy+(ty+.5-oy)*.2;}}}
-function dmgB(b,d){if(b.dead)return;b.hp-=d;b.hitT=.1;if(b.core&&Math.random()<.05)vib(15);if(b.hp<=0){explode(b.x+.5,b.y+.5,b.core?3:1.2,'#ff9a40');if(b.core){lose();return;}b.dead=true;removeB(b,false);}}
+function dmgB(b,d){if(b.dead)return;b.hp-=d;b.hitT=.1;if(b.core&&Math.random()<.05)vib(15);if(b.hp<=0){if(B[b.t].turret)vib(80);explode(b.x+.5,b.y+.5,b.core?3:1.2,'#ff9a40');if(b.core){lose();return;}b.dead=true;removeB(b,false);}}
 // ---------- particles ----------
 function puff(x,y,c,n,s){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*s*2;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.5,max:.5,c,s:.12});}}
 function spark(x,y){for(let i=0;i<3;i++){const a=Math.random()*6.28,v=2+Math.random()*3;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.2,max:.2,c:'#ffe080',s:.07});}}
